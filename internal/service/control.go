@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -117,11 +118,15 @@ func (r *Runtime) ConfigurePersistence(directory string) error {
 		return fmt.Errorf("verify persistence: %w", err)
 	}
 	r.mu.Lock()
-	defer r.mu.Unlock()
 	if r.control == nil {
 		r.control = defaultControlState()
 	}
 	r.control.Persistent = store
+	r.mu.Unlock()
+	// 在 Runtime.mu 释放后再接证据库，避免与 evidence.Store 锁嵌套。
+	if err := r.Evidence.ConfigurePersistence(filepath.Join(directory, "evidence")); err != nil {
+		return fmt.Errorf("configure evidence persistence: %w", err)
+	}
 	return nil
 }
 

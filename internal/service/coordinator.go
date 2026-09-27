@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/wyw14/solo-036/internal/compressor"
+	"github.com/wyw14/solo-036/internal/evidence"
 	"github.com/wyw14/solo-036/internal/journal"
 	"github.com/wyw14/solo-036/internal/launcher"
 	"github.com/wyw14/solo-036/internal/permit"
@@ -26,6 +27,7 @@ type Runtime struct {
 	Valves     *valve.Controller
 	Receiver   *receiver.Controller
 	Compressor *compressor.Worker
+	Evidence   *evidence.Store
 	mu         sync.Mutex
 	control    *ControlState
 }
@@ -42,5 +44,6 @@ func NewRuntime() *Runtime {
 	valves := valve.NewController(p)
 	recv := receiver.NewController()
 	worker := compressor.NewWorker(p, runs)
-	return &Runtime{Runs: runs, Routes: routes, Tracker: tracks, Lineage: lineage, Journal: journalStore, Pressure: p, Permits: permits, Launcher: launch, Valves: valves, Receiver: recv, Compressor: worker, control: defaultControlState()}
+	evidenceStore := evidence.NewStore()
+	return &Runtime{Runs: runs, Routes: routes, Tracker: tracks, Lineage: lineage, Journal: journalStore, Pressure: p, Permits: permits, Launcher: launch, Valves: valves, Receiver: recv, Compressor: worker, Evidence: evidenceStore, control: defaultControlState()}
 }
